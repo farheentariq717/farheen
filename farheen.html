@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cube Catcher</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+    }
+
+    canvas {
+      border: 3px solid black;
+      background: white;
+      margin-top: 10px;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    #scoreBoard {
+      font-size: 22px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>CUBE CATCHER (minigame)</h1>
+
+  <div id="scoreBoard">
+    Score: <span id="scoreVal">0</span>
+  </div>
+
+  <canvas id="gameCanvas" width="700" height="450"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("scoreVal");
+
+    let score = 0;
+
+    const player = {
+      x: 225,
+      y: 175,
+      size: 40,
+      color: "red",
+      speed: 5
+    };
+
+    let targets = [];
+    const keys = {};
+
+    window.addEventListener("keydown", (e) => {
+      keys[e.key] = true;
+    });
+
+    window.addEventListener("keyup", (e) => {
+      keys[e.key] = false;
+    });
+
+    canvas.addEventListener("mousedown", (e) => {
+
+      const rect = canvas.getBoundingClientRect();
+
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      targets = targets.filter(t => {
+
+        const clicked =
+          mouseX > t.x &&
+          mouseX < t.x + t.size &&
+          mouseY > t.y &&
+          mouseY < t.y + t.size;
+
+        if (clicked) {
+          score += 10;
+          scoreEl.innerText = score;
+          return false;
+        }
+
+        return true;
+      });
+    });
+
+    function spawnTarget() {
+
+      if (targets.length < 5) {
+
+        targets.push({
+          x: Math.random() * (canvas.width - 30),
+          y: Math.random() * (canvas.height - 30),
+          size: 30,
+          color: "black"
+        });
+
+      }
+    }
+
+    setInterval(spawnTarget, 2000);
+
+    function update() {
+
+      if (keys["ArrowUp"] || keys["w"]) {
+        player.y -= player.speed;
+      }
+
+      if (keys["ArrowDown"] || keys["s"]) {
+        player.y += player.speed;
+      }
+
+      if (keys["ArrowLeft"] || keys["a"]) {
+        player.x -= player.speed;
+      }
+
+      if (keys["ArrowRight"] || keys["d"]) {
+        player.x += player.speed;
+      }
+
+      player.x = Math.max(
+        0,
+        Math.min(canvas.width - player.size, player.x)
+      );
+
+      player.y = Math.max(
+        0,
+        Math.min(canvas.height - player.size, player.y)
+      );
+    }
+
+    function render() {
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      targets.forEach(t => {
+
+        ctx.fillStyle = t.color;
+        ctx.fillRect(t.x, t.y, t.size, t.size);
+
+      });
+
+      ctx.fillStyle = player.color;
+
+      ctx.fillRect(
+        player.x,
+        player.y,
+        player.size,
+        player.size
+      );
+
+      update();
+
+      requestAnimationFrame(render);
+    }
+
+    render();
+
+  </script>
+
+</body>
+</html>
